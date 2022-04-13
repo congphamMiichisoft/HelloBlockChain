@@ -12,11 +12,25 @@
         Attach Contract
       </button>
     </div>
+    <div style="margin: 10px" v-if="isConnectedWallet">
+      <label for="isbn">ISBN:</label>
+      <input id="isbn" type="text" v-model="new_book.isbn" /><br />
+      <label for="author">Author:</label>
+      <input type="text" id="author" v-model="new_book.author" /><br />
+      <label for="title">Title</label>
+      <input type="text" id="title" v-model="new_book.title" /><br />
+      <button class="primaryButton" @click="addBook()">Add</button>
+      <button class="primaryButton" @click="showListBook()">ShowBook</button>
+    </div>
+    <div v-if="isConnectedWallet &&listBook.length > 0">
+      <h3>All Book Added</h3>
+    </div>
   </div>
 </template>
 
 <script>
-import Greeter from "../../blockchain/artifacts/contracts/Greeter.sol/Greeter.json";
+// import Greeter from "../../blockchain/artifacts/contracts/Greeter.sol/Greeter.json";
+import Library from "../../blockchain/artifacts/contracts/Library.sol/Library.json";
 export default {
   name: "HelloWorld",
   props: {
@@ -26,7 +40,14 @@ export default {
     return {
       currentAccount: null,
       currentContract: null,
-      contractAddress: "0x830E14385f55Ca0c36BA9c16141E248CC73443f5",
+      contractAddress: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      new_book: {
+        isbn: "",
+        title: "",
+        author: "",
+      },
+      isConnectedWallet: false,
+      listBook: [],
     };
   },
   mounted() {
@@ -70,8 +91,11 @@ export default {
         });
         console.log("Connected", accounts[0]);
         this.currentAccount = accounts[0];
+        this.isConnectedWallet = true;
+        return true;
       } catch (error) {
         console.log(error);
+        return false;
       }
     },
 
@@ -82,14 +106,35 @@ export default {
       const signer = provider.getSigner();
       //const network = await provider.getNetwork();
       //console.log(network);
-      const abi = Greeter.abi;
+      const abi = Library.abi;
       // The Contract object
       this.currentContract = new this.$ethers.Contract(
         this.contractAddress,
         abi,
         signer
       );
+      this.isConnectedWallet = true;
       // console.log(await this.currentContract.symbol());
+    },
+
+    addBook: async function (e) {
+      this.attachContract = e;
+      console.log(
+        "Adding Book: ",
+        this.new_book.isbn,
+        this.new_book.title,
+        this.new_book.author
+      );
+      await this.currentContract.addBook(
+        this.new_book.isbn,
+        this.new_book.title,
+        this.new_book.author
+      );
+    },
+    
+    showListBook: async function () {
+      console.log("getting List Book")
+      this.listBook = await this.contractAddress.getAllBook();
     },
   },
 };
