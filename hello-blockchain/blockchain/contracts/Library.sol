@@ -134,6 +134,10 @@ Return library name
         return ledger[_bookId];
     }   
 
+    function getAllBook()public view returns (Book[]){
+        return ledger;
+    }
+
     struct Book {
         string isbn;
         string title;
